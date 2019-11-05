@@ -1,0 +1,170 @@
+const Account = require("../models/AccountModel");
+const { body,validationResult } = require("express-validator");
+const { sanitizeBody } = require("express-validator");
+const apiResponse = require("../helpers/apiResponse");
+const auth = require("../middlewares/jwt");
+var mongoose = require("mongoose");
+mongoose.set("useFindAndModify", false);
+
+// Account Schema
+function AccountData(data) {
+	this.accountType = data.accountType;
+	this.accountNumber = data.accountNumber;
+	this.createdAt = data.createdAt;
+	this.approvedBy = data.approvedBy;
+}
+
+/**
+ * Create Account.
+ * 
+ * @param {string}      accountType
+ * 
+ * @returns {Object}
+ */
+exports.createAccount = [
+	auth,
+	body("accountType", "Account Type must not be empty.").isLength({ min: 1 }).trim(),
+	sanitizeBody("*").escape(),
+	(req, res) => {
+		try {
+			const errors = validationResult(req);
+			var account = new Account(
+				{ accountType: req.body.accountType,
+					user: req.user,
+				});
+
+			if (!errors.isEmpty()) {
+				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
+			}
+			else {
+				//Save Account.
+				account.save(function (err) {
+					if (err) { return apiResponse.ErrorResponse(res, err); }
+					let accountData = new AccountData(account);
+					return apiResponse.successResponseWithData(res,"Account Creation Successful.", accountData);
+				});
+			}
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
+ * Account update.
+ * 
+ * @param {string}      accountNumber
+ * @param {string}      status
+ * 
+ * @returns {Object}
+ */
+exports.accountUpdate = [
+	auth,
+	body("accountNumber", "Account Number must not be empty.").isLength({ min: 10 }).trim(),
+	body("status", "Status must not be empty").isLength({ min: 1 }).trim(),
+	sanitizeBody("*").escape(),
+	(req, res) => {
+		try {
+			const errors = validationResult(req);
+			const {status, accountNumber} = req.body;
+			const account = {
+				status,
+				accountNumber,
+				approvedBy: req.user._id
+			};
+
+			if (!errors.isEmpty()) {
+				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
+			}
+			else {
+				Account.findById(req.params.id, (err, foundAccount) => {
+					if(foundAccount === undefined){
+						return apiResponse.notFoundResponse(res, "Account not found");
+					} else {
+						Account.findByIdAndUpdate(req.params.id, account, (err) => {
+							if(err) {
+								return apiResponse.ErrorResponse(res, err);
+							} else {
+								let accountData = new AccountData(account);
+								return apiResponse.successResponseWithData(res, "Account Updated Succesfully", accountData);
+							}
+						});
+					}
+				});
+			}
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
+ * Pending Account List.
+ * 
+ * @returns {Object}
+ */
+exports.accountListStatus = [
+	auth,
+	function (req, res) {
+		try {
+			Account.find({status: req.query.status}).then((accounts) => {
+				if(accounts.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation Success", accounts);
+				} else {
+					return apiResponse.successResponseWithData(res, "Operation success", {});
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
+ * Account Detail.
+ * 
+ * @returns {Object}
+ */
+exports.accountNumber = [
+	auth,
+	function (req, res) {
+		try {
+			Account.findOne({accountNumber: req.params.accountNumber}).then((account) => {
+				if(account){
+					return apiResponse.successResponseWithData(res, "Operation Success", account);
+				} else {
+					return apiResponse.notFoundResponse(res, "Account not Found");
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
+ * Pending Account List.
+ * 
+ * @returns {Object}
+ */
+exports.accountUser = [
+	auth,
+	function (req, res) {
+		try {
+			Account.find({user: req.params.userId}).then((accounts) => {
+				if(accounts.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation Success", accounts);
+				} else {
+					return apiResponse.successResponseWithData(res, "Operation Success", {});
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
