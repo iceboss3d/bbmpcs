@@ -11,6 +11,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 		pass: process.env.EMAIL_SMTP_PASSWORD
 	}
 });*/
+console.log(process.env.SENDGRID_API_KEY);
 
 exports.send = function (from, to, subject, html)
 {
