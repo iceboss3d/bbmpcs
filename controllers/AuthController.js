@@ -68,7 +68,7 @@ exports.register = [
 					errors.array()
 				);
 			} else {
-				console.log("got here");
+				console.log(process.env.JWT_TIMEOUT_DURATION, process.env.SENDGRID_API_KEY);
 
 				//hash input password
 				bcrypt.hash(req.body.password, 10, function(err, hash) {
