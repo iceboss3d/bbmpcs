@@ -175,7 +175,7 @@ exports.login = [
 										//Prepare JWT token for authentication
 										const jwtPayload = userData;
 										const jwtData = {
-											expiresIn: process.env.JWT_TIMEOUT_DURATION
+											expiresIn: "2d"
 										};
 										const secret = process.env.JWT_SECRET;
 										console.log(process.env.JWT_TIMEOUT_DURATION, process.env.JWT_SECRET);
