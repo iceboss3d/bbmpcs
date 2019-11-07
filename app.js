@@ -2,7 +2,9 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-require("dotenv").config();
+if (process.env.NODE_ENV !== "production"){
+	require("dotenv").config();
+}
 var indexRouter = require("./routes/index");
 var apiRouter = require("./routes/api");
 var apiResponse = require("./helpers/apiResponse");
@@ -42,8 +44,6 @@ app.use(cors());
 //Route Prefixes
 app.use("/", indexRouter);
 app.use("/api/", apiRouter);
-
-console.log(process.env.NODE_ENV);
 
 
 // throw 404 if URL not found
