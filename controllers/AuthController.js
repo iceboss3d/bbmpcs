@@ -178,6 +178,7 @@ exports.login = [
 											expiresIn: process.env.JWT_TIMEOUT_DURATION
 										};
 										const secret = process.env.JWT_SECRET;
+										console.log(process.env.JWT_TIMEOUT_DURATION, process.env.JWT_SECRET);
 										//Generated JWT token with Payload and secret.
 										userData.token = jwt.sign(jwtPayload, secret, jwtData);
 										return apiResponse.successResponseWithData(
