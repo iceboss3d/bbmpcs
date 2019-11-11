@@ -169,7 +169,7 @@ exports.accountTransactions = [
 	auth,
 	function (req, res) {
 		try {
-			Transaction.find({accountNumber: req.params.accountNumber}).then((transaction) => {
+			Transaction.find({accountNumber: req.params.accountNumber, status: "verified"}).then((transaction) => {
 				if(transaction > 0){
 					return apiResponse.successResponseWithData(res, "Operation Success", transaction);
 				} else {
