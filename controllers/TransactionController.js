@@ -160,3 +160,25 @@ exports.transactionDetail = [
 		}
 	}
 ];
+/**
+ * Account Transactions.
+ * 
+ * @returns {Object}
+ */
+exports.accountTransactions = [
+	auth,
+	function (req, res) {
+		try {
+			Transaction.find({accountNumber: req.params.accountNumber}).then((transaction) => {
+				if(transaction > 0){
+					return apiResponse.successResponseWithData(res, "Operation Success", transaction);
+				} else {
+					return apiResponse.successResponseWithData(res, "Operation Success", transaction);
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	},
+];
