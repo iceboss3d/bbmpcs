@@ -155,11 +155,11 @@ exports.accountUser = [
 	auth,
 	function (req, res) {
 		try {
-			Account.find({user: req.params.userId}).then((accounts) => {
+			Account.find({user: req.params.userId, status: "created"}).then((accounts) => {
 				if(accounts.length > 0){
 					return apiResponse.successResponseWithData(res, "Operation Success", accounts);
 				} else {
-					return apiResponse.successResponseWithData(res, "Operation Success", {});
+					return apiResponse.successResponseWithData(res, "Operation Success", []);
 				}
 			});
 		} catch (err) {
