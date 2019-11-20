@@ -55,21 +55,19 @@ exports.createAccount = [
  * Account update.
  * 
  * @param {string}      accountNumber
- * @param {string}      status
  * 
  * @returns {Object}
  */
 exports.accountUpdate = [
 	auth,
 	body("accountNumber", "Account Number must not be empty.").isLength({ min: 10 }).trim(),
-	body("status", "Status must not be empty").isLength({ min: 1 }).trim(),
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			const {status, accountNumber} = req.body;
+			const {accountNumber} = req.body;
 			const account = {
-				status,
+				status: "created",
 				accountNumber,
 				approvedBy: req.user._id
 			};
@@ -78,16 +76,22 @@ exports.accountUpdate = [
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
 			else {
-				Account.findById(req.params.id, (err, foundAccount) => {
-					if(foundAccount === undefined){
-						return apiResponse.notFoundResponse(res, "Account not found");
+				Account.find({accountNumber}, (err, accounts) => {
+					if(accounts.length >= 1){
+						return apiResponse.ErrorResponse(res, "An Account with such Account Number already exists");
 					} else {
-						Account.findByIdAndUpdate(req.params.id, account, (err) => {
-							if(err) {
-								return apiResponse.ErrorResponse(res, err);
+						Account.findById(req.params.id, (err, foundAccount) => {
+							if(foundAccount === undefined){
+								return apiResponse.notFoundResponse(res, "Account not found");
 							} else {
-								let accountData = new AccountData(account);
-								return apiResponse.successResponseWithData(res, "Account Updated Succesfully", accountData);
+								Account.findByIdAndUpdate(req.params.id, account, (err) => {
+									if(err) {
+										return apiResponse.ErrorResponse(res, err);
+									} else {
+										let accountData = new AccountData(account);
+										return apiResponse.successResponseWithData(res, "Account Updated Succesfully", accountData);
+									}
+								});
 							}
 						});
 					}
@@ -147,7 +151,7 @@ exports.accountNumber = [
 ];
 
 /**
- * Pending Account List.
+ * Account List.
  * 
  * @returns {Object}
  */
