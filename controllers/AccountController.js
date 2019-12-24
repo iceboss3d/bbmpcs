@@ -1,8 +1,9 @@
 const Account = require("../models/AccountModel");
-const { body,validationResult } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
+const { isAdmin, isOwner } = require("../helpers/userValidation");
 var mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 
@@ -63,9 +64,12 @@ exports.accountUpdate = [
 	body("accountNumber", "Account Number must not be empty.").isLength({ min: 10 }).trim(),
 	sanitizeBody("*").escape(),
 	(req, res) => {
+		if (!isAdmin) {
+			return apiResponse.unauthorizedResponse(res, "Admin Level Clearance Required");
+		}
 		try {
 			const errors = validationResult(req);
-			const {accountNumber} = req.body;
+			const { accountNumber } = req.body;
 			const account = {
 				status: "created",
 				accountNumber,
@@ -73,23 +77,33 @@ exports.accountUpdate = [
 			};
 
 			if (!errors.isEmpty()) {
-				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			}
-			else {
-				Account.find({accountNumber}, (err, accounts) => {
-					if(accounts.length >= 1){
-						return apiResponse.ErrorResponse(res, "An Account with such Account Number already exists");
+				return apiResponse.validationErrorWithData(
+					res,
+					"Validation Error.",
+					errors.array()
+				);
+			} else {
+				Account.find({ accountNumber }, (err, accounts) => {
+					if (accounts.length >= 1) {
+						return apiResponse.ErrorResponse(
+							res,
+							"An Account with such Account Number already exists"
+						);
 					} else {
 						Account.findById(req.params.id, (err, foundAccount) => {
-							if(foundAccount === undefined){
+							if (foundAccount === undefined) {
 								return apiResponse.notFoundResponse(res, "Account not found");
 							} else {
-								Account.findByIdAndUpdate(req.params.id, account, (err) => {
-									if(err) {
+								Account.findByIdAndUpdate(req.params.id, account, err => {
+									if (err) {
 										return apiResponse.ErrorResponse(res, err);
 									} else {
 										let accountData = new AccountData(account);
-										return apiResponse.successResponseWithData(res, "Account Updated Succesfully", accountData);
+										return apiResponse.successResponseWithData(
+											res,
+											"Account Updated Succesfully",
+											accountData
+										);
 									}
 								});
 							}
@@ -98,7 +112,7 @@ exports.accountUpdate = [
 				});
 			}
 		} catch (err) {
-			//throw error in json response with status 500. 
+			//throw error in json response with status 500.
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
@@ -112,16 +126,27 @@ exports.accountUpdate = [
 exports.accountListStatus = [
 	auth,
 	function (req, res) {
+		if (!isAdmin(req.user)){
+			return apiResponse.unauthorizedResponse(res, "Admin Level Clearance Required");
+		}
 		try {
-			Account.find({status: req.query.status}).then((accounts) => {
-				if(accounts.length > 0){
-					return apiResponse.successResponseWithData(res, "Operation Success", accounts);
+			Account.find({ status: req.query.status }).then(accounts => {
+				if (accounts.length > 0) {
+					return apiResponse.successResponseWithData(
+						res,
+						"Operation Success",
+						accounts
+					);
 				} else {
-					return apiResponse.successResponseWithData(res, "Operation success", {});
+					return apiResponse.successResponseWithData(
+						res,
+						"Operation success",
+						{}
+					);
 				}
 			});
 		} catch (err) {
-			//throw error in json response with status 500. 
+			//throw error in json response with status 500.
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
@@ -135,16 +160,25 @@ exports.accountListStatus = [
 exports.accountNumber = [
 	auth,
 	function (req, res) {
+		if (!isAdmin(req.user) || !isOwner(req.params.accountNumber)) {
+			return apiResponse.unauthorizedResponse(res, "Admin Clearnace Required");
+		}
 		try {
-			Account.findOne({accountNumber: req.params.accountNumber}).then((account) => {
-				if(account){
-					return apiResponse.successResponseWithData(res, "Operation Success", account);
-				} else {
-					return apiResponse.notFoundResponse(res, "Account not Found");
+			Account.findOne({ accountNumber: req.params.accountNumber }).then(
+				account => {
+					if (account) {
+						return apiResponse.successResponseWithData(
+							res,
+							"Operation Success",
+							account
+						);
+					} else {
+						return apiResponse.notFoundResponse(res, "Account not Found");
+					}
 				}
-			});
+			);
 		} catch (err) {
-			//throw error in json response with status 500. 
+			//throw error in json response with status 500.
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
