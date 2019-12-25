@@ -1,24 +1,24 @@
 const User = require("../models/UserModel");
 const Account = require("../models/AccountModel");
 
-const isAdmin = (userId) => {
-	User.findById({_id: userId}, (err, user) => {
+const isAdmin = async (userId) => {	
+	await User.findById({_id: userId._id}, (err, user) => {
 		if (err){
 			return false;
-		}
-		if (user.level !== "admin") {
+		} else if (user.level !== "admin") {
 			return false;
+		} else {
+			return true;
 		}
-		return true;
 	});
 };
 
-const isOwner = (accountNumber, userId) => {
-	Account.findByOne({accountNumber}, (err, account) => {
+const isOwner = async (accountNumber, userId) => {
+	await Account.findOne({accountNumber}, (err, account) => {
 		if (err){
 			return false;
 		}
-		if (account.user !== userId) {
+		if (account.user != userId._id) {
 			return false;
 		}
 		return true;

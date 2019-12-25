@@ -159,8 +159,8 @@ exports.accountListStatus = [
  */
 exports.accountNumber = [
 	auth,
-	function (req, res) {
-		if (!isAdmin(req.user) || !isOwner(req.params.accountNumber)) {
+	async function (req, res) {
+		if (!isOwner(req.params.accountNumber, req.user)) {
 			return apiResponse.unauthorizedResponse(res, "Admin Clearnace Required");
 		}
 		try {
