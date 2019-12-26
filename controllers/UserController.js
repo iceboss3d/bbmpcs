@@ -5,6 +5,21 @@ const auth = require("../middlewares/jwt");
 const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 
+exports.getContact = [
+	auth,
+	(req, res) => {
+		try {
+			ContactInfo.findOne({user: req.user}, (err, user) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "Contact not found");
+				}
+				return apiResponse.successResponseWithData(res, "Successfully Fetched Info", user);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
+		}
+	}
+];
 
 exports.updateContact = [
 	auth,
@@ -34,6 +49,26 @@ exports.updateContact = [
 			});
 		} catch (err) {
 			apiResponse.ErrorResponse(res, "Something Went wrong");
+		}
+	}
+];
+
+exports.getBank = [
+	auth,
+	(req, res) => {
+		try {
+			BankDetails.find({ user: req.user }, (err, bank) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "Contact not found");
+				}
+				return apiResponse.successResponseWithData(
+					res,
+					"Successfully Fetched Info",
+					bank
+				);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
 		}
 	}
 ];
