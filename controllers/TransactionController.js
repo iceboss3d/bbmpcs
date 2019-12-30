@@ -182,3 +182,33 @@ exports.accountTransactions = [
 		}
 	},
 ];
+
+exports.withdraw = [
+	auth,
+	(req, res) => {
+		try {
+			const { amount, accountNumber } = req.body;
+			const transaction = new Transaction({
+				amount,
+				accountNumber,
+				transactionType: "debit",
+				reference: "pending",
+				channel: "bank"
+			});
+
+			transaction.save((err) => {
+				if (err) {
+					return apiResponse.ErrorResponse(res, err);
+				}
+				let transactionData = new TransactionData(transaction);
+				return apiResponse.successResponseWithData(
+					res,
+					"Transaction Creation Successful.",
+					transactionData
+				);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
+		}
+	}
+];

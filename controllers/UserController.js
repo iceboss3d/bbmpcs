@@ -27,6 +27,7 @@ exports.updateContact = [
 		try {
 			ContactInfo.findOne({user: req.user}, (err, user) => {
 				const contact = {
+					phoneNumber: req.body.phoneNumber,
 					homeAddress: req.body.homeAddress,
 					city: req.body.city,
 					state: req.body.state,
