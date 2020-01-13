@@ -6,6 +6,7 @@ var router = express.Router();
 router.post("/", AccountController.createAccount);
 // router.get("/:id", BookController.bookDetail);
 router.get("/s", AccountController.accountListStatus);
+router.get("/", AccountController.accountList);
 router.get("/n/:accountNumber", AccountController.accountNumber);
 router.get("/u/:userId", AccountController.accountUser);
 // router.post("/", BookController.bookStore);

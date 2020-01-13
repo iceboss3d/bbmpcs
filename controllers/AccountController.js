@@ -153,6 +153,40 @@ exports.accountListStatus = [
 ];
 
 /**
+ * Account List.
+ * 
+ * @returns {Object}
+ */
+exports.accountList = [
+	auth,
+	function (req, res) {
+		if (!isAdmin(req.user)){
+			return apiResponse.unauthorizedResponse(res, "Admin Level Clearance Required");
+		}
+		try {
+			Account.find({}).then(accounts => {
+				if (accounts.length > 0) {
+					return apiResponse.successResponseWithData(
+						res,
+						"Operation Success",
+						accounts
+					);
+				} else {
+					return apiResponse.successResponseWithData(
+						res,
+						"Operation success",
+						{}
+					);
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500.
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
  * Account Detail.
  * 
  * @returns {Object}
