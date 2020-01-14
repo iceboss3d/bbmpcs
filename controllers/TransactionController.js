@@ -139,6 +139,29 @@ exports.transactionListStatus = [
 ];
 
 /**
+ * Transaction List.
+ * 
+ * @returns {Object}
+ */
+exports.transactionList = [
+	auth,
+	function (req, res) {
+		try {
+			Transaction.find({}).then((transactions) => {
+				if(transactions.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation Success", transactions);
+				} else {
+					return apiResponse.successResponseWithData(res, "Operation success", {});
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
  * Transaction Detail.
  * 
  * @returns {Object}
