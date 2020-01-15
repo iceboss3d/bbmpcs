@@ -22,6 +22,22 @@ exports.getContact = [
 	}
 ];
 
+exports.getUserContact = [
+	auth,
+	(req, res) => {
+		try {
+			ContactInfo.findOne({user: req.params.id}, (err, user) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "Contact not found");
+				}
+				return apiResponse.successResponseWithData(res, "Successfully Fetched Info", user);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
+		}
+	}
+];
+
 exports.updateContact = [
 	auth,
 	(req, res) => {
