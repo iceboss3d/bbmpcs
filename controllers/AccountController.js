@@ -219,6 +219,38 @@ exports.accountNumber = [
 ];
 
 /**
+ * Account Detail.
+ * 
+ * @returns {Object}
+ */
+exports.accountById = [
+	auth,
+	async function (req, res) {
+		if (!isOwner(req.params.id, req.user)) {
+			return apiResponse.unauthorizedResponse(res, "Admin Clearnace Required");
+		}
+		try {
+			Account.findOne({ _id: req.params.id }).then(
+				account => {
+					if (account) {
+						return apiResponse.successResponseWithData(
+							res,
+							"Operation Success",
+							account
+						);
+					} else {
+						return apiResponse.notFoundResponse(res, "Account not Found");
+					}
+				}
+			);
+		} catch (err) {
+			//throw error in json response with status 500.
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
  * Account List.
  * 
  * @returns {Object}
