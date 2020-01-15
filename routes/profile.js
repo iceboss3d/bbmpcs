@@ -8,5 +8,6 @@ router.put("/contact", UserController.updateContact);
 router.get("/bank", UserController.getBank);
 router.get("/bank/:uid", UserController.getUserBank);
 router.get("/contact", UserController.getContact);
+router.get("/user/:id", UserController.getUser);
 
 module.exports = router;

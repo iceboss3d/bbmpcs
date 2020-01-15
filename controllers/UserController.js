@@ -1,5 +1,6 @@
 const ContactInfo = require("../models/ContactInfoModel");
 const BankDetails = require("../models/BankDetailsModel");
+const User = require("../models/UserModel");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 const mongoose = require("mongoose");
@@ -86,6 +87,26 @@ exports.getUserBank = [
 					res,
 					"Successfully Fetched Info",
 					bank
+				);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
+		}
+	}
+];
+
+exports.getUser = [
+	auth,
+	(req, res) => {
+		try {
+			User.findOne({ _id: req.params.id }, (err, user) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "User not found");
+				}
+				return apiResponse.successResponseWithData(
+					res,
+					"Successfully Fetched Info",
+					user
 				);
 			});
 		} catch (err) {
