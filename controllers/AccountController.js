@@ -226,9 +226,9 @@ exports.accountNumber = [
 exports.accountById = [
 	auth,
 	async function (req, res) {
-		if (!isOwner(req.params.id, req.user) || !isAdmin(req.user)) {
+		/* if (!isOwner(req.params.id, req.user) || !isAdmin(req.user)) {
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
-		}
+		}*/
 		try {
 			console.log("here");
 			Account.findOne({ _id: req.params.id }).then(
