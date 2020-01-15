@@ -81,23 +81,27 @@ exports.createTransaction = [
 ];
 
 
-/**
- * Verify Transaction.
- * 
- * @returns {Object}
- */
 exports.verifyTransaction = [
 	auth,
 	(req, res) => {
 		try {
-			const transaction = 
-				{ status: "verified",
-					approvedBy: req.user._id
-				};
+			let transaction;
 			Transaction.findById(req.params.id, (err, foundTransaction) => {
 				if(foundTransaction === undefined){
 					return apiResponse.notFoundResponse(res, "Transaction not found");
 				} else {
+					if(foundTransaction.transactionType === "credit"){
+						transaction = {
+              status: "verified",
+              approvedBy: req.user._id
+            };
+					} else {
+						transaction = {
+							status: "verified",
+							refrence: req.body.reference,
+              approvedBy: req.user._id
+            };
+					}
 					Transaction.findByIdAndUpdate(req.params.id, transaction, (err) => {
 						if(err){
 							return apiResponse.ErrorResponse(res, err);
