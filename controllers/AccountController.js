@@ -230,6 +230,7 @@ exports.accountById = [
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
 		}
 		try {
+			console.log("here");
 			Account.findOne({ _id: req.params.id }).then(
 				account => {
 					console.log(account);
