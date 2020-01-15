@@ -226,7 +226,7 @@ exports.accountNumber = [
 exports.accountById = [
 	auth,
 	async function (req, res) {
-		if (!isOwner(req.params.id, req.user)) {
+		if (!isOwner(req.params.id, req.user) || !isAdmin(req.user)) {
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
 		}
 		try {
