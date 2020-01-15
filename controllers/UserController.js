@@ -74,6 +74,26 @@ exports.getBank = [
 	}
 ];
 
+exports.getUserBank = [
+	auth,
+	(req, res) => {
+		try {
+			BankDetails.find({ user: req.params.uid }, (err, bank) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "Bank not found");
+				}
+				return apiResponse.successResponseWithData(
+					res,
+					"Successfully Fetched Info",
+					bank
+				);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, "Something went wrong");
+		}
+	}
+];
+
 exports.updateBank = [
 	auth,
 	(req, res) => {
