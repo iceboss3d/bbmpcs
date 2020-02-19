@@ -1,6 +1,7 @@
 const ContactInfo = require("../models/ContactInfoModel");
 const BankDetails = require("../models/BankDetailsModel");
 const User = require("../models/UserModel");
+const Kyc = require("../models/KycModel");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 const mongoose = require("mongoose");
@@ -67,6 +68,71 @@ exports.updateContact = [
 			});
 		} catch (err) {
 			apiResponse.ErrorResponse(res, "Something Went wrong");
+		}
+	}
+];
+
+exports.getKyc = [
+	auth,
+	(req, res) => {
+		try {
+			Kyc.findOne({user: req.user}, (err, kyc) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "KYC not found");
+				}
+				return apiResponse.successResponseWithData(res, "Successfully Fetched Info", kyc);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+exports.getUserKyc = [
+	auth,
+	(req, res) => {
+		try {
+			Kyc.findOne({user: req.params.id}, (err, kyc) => {
+				if (err) {
+					return apiResponse.notFoundResponse(res, "KYC not found");
+				}
+				return apiResponse.successResponseWithData(res, "Successfully Fetched Info", kyc);
+			});
+		} catch (err) {
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+exports.updateKyc = [
+	auth,
+	(req, res) => {
+		try {
+			Kyc.findOne({user: req.user}, (err, user) => {
+				const kyc = {
+					dateOfBirth: req.body.dateOfBirth,
+					idUrl: req.body.idUrl,
+					passportUrl: req.body.passportUrl,
+					signatureUrl: req.body.signatureUrl,
+					user: req.user
+				};
+				if (user) {
+					Kyc.findOneAndUpdate({user: req.user}, kyc, (err)=> {
+						if (err){
+							return apiResponse.ErrorResponse(res, err);
+						}
+						return apiResponse.successResponse(res, "KYC Updated");
+					});
+				} else {
+					Kyc.create(kyc)
+						.then(() => {
+							return apiResponse.successResponse(res, "KYC Created");
+						})
+						.catch((err) => apiResponse.ErrorResponse(res, err));
+				}
+			});
+		} catch (err) {
+			apiResponse.ErrorResponse(res, err);
 		}
 	}
 ];
