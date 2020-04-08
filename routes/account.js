@@ -5,7 +5,7 @@ var router = express.Router();
 
 router.post("/", AccountController.createAccount);
 // router.get("/:id", BookController.bookDetail);
-router.get("/s", AccountController.accountListStatus);
+router.get("/pending", AccountController.pendingAccounts);
 router.get("/", AccountController.accountList);
 router.get("/:id", AccountController.accountById);
 router.get("/n/:accountNumber", AccountController.accountNumber);

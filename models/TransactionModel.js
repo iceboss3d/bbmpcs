@@ -8,8 +8,10 @@ var TransactionSchema = new Schema({
 	status: {type: String, default: "pending"},
 	accountNumber: { type: String, required: true },
 	reference: {type: String, required: true},
+	txRef: {type: String, required: true},
 	approvedBy: {type: Schema.ObjectId, ref: "User"},
-	channel: {type: String, required: true}
+	channel: {type: String, required: true},
+	description: {type: String, required: false}
 }, {timestamps: true});
 
 module.exports = mongoose.model("Transaction", TransactionSchema);
