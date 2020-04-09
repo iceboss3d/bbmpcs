@@ -60,7 +60,8 @@ exports.createTransaction = [
 					amount,
 					reference,
 					channel,
-					description
+					description,
+					txRef
 				});
 
 			if (!errors.isEmpty()) {
@@ -87,6 +88,14 @@ exports.verifyTransaction = [
 	(req, res) => {
 		try {
 			let transaction;
+			Transaction.findOne({reference: req.body.reference}, (err, trx) => {
+				if(err){
+					return apiResponse.ErrorResponse(res, err);
+				}
+				if(trx){
+					return apiResponse.ErrorResponse(res, "Transaction with same reference already exists");
+				}
+			})
 			Transaction.findById(req.params.id, (err, foundTransaction) => {
 				if(foundTransaction === undefined){
 					return apiResponse.notFoundResponse(res, "Transaction not found");

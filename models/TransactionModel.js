@@ -7,7 +7,7 @@ var TransactionSchema = new Schema({
 	amount: {type: Number},
 	status: {type: String, default: "pending"},
 	accountNumber: { type: String, required: true },
-	reference: {type: String, required: true},
+	reference: {type: String, required: false},
 	txRef: {type: String, required: false},
 	approvedBy: {type: Schema.ObjectId, ref: "User"},
 	channel: {type: String, required: true},
