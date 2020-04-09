@@ -53,13 +53,14 @@ exports.createTransaction = [
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			const {accountNumber, amount, transactionType, reference, channel} = req.body;
+			const {accountNumber, amount, transactionType, reference, channel, description} = req.body;
 			var transaction = new Transaction(
 				{ transactionType,
 					accountNumber,
 					amount,
 					reference,
-					channel
+					channel,
+					description
 				});
 
 			if (!errors.isEmpty()) {
