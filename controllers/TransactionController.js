@@ -24,7 +24,7 @@ function TransactionData(data) {
  * @param {string}      transactionType
  * @param {number}      amount
  * @param {string}      accountNumber
- * @param {string}      reference
+ * @param {string}      txRef
  * @param {string}      channel
  *
  * @returns {Object}
@@ -51,7 +51,7 @@ exports.createTransaction = [
     .custom((value, { req }) => {
       const { accountNumber, amount, transactionType } = req.body;
       return Transaction.findOne({
-        reference: value,
+        txRef: value,
         accountNumber,
         amount,
         transactionType,
@@ -71,7 +71,7 @@ exports.createTransaction = [
         accountNumber,
         amount,
         transactionType,
-        reference,
+        txRef,
         channel,
         description,
       } = req.body;
@@ -79,10 +79,9 @@ exports.createTransaction = [
         transactionType,
         accountNumber,
         amount,
-        reference,
+        txRef,
         channel,
         description,
-        txRef,
       });
 
       if (!errors.isEmpty()) {
