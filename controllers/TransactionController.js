@@ -45,7 +45,7 @@ exports.createTransaction = [
         }
       });
     }),
-  body("reference", "Reference must not be empty.")
+  body("txRef", "TxRef must not be empty.")
     .isLength({ min: 1 })
     .trim()
     .custom((value, { req }) => {
