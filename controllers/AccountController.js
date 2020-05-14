@@ -150,12 +150,15 @@ exports.accountUpdate = [
                       if (err) {
                         return apiResponse.ErrorResponse(res, err);
                       } else {
-												let accountData = new AccountData(account);
-												PendingAccount.deleteOne({_id: req.params.id}, (err) => {
-													if(err){
-														return apiResponse.ErrorResponse(res, err);
-													}
-												})
+                        let accountData = new AccountData(account);
+                        PendingAccount.deleteOne(
+                          { _id: req.params.id },
+                          (err) => {
+                            if (err) {
+                              return apiResponse.ErrorResponse(res, err);
+                            }
+                          }
+                        );
                         return apiResponse.successResponseWithData(
                           res,
                           "Account Created",
@@ -179,34 +182,38 @@ exports.accountUpdate = [
 
 /**
  * Pending Account List
- * 
+ *
  * @returns {Object}
  */
 
- exports.pendingAccounts = [
-	 auth,
-	 (req, res) => {
-		if (!isAdmin(req.user)) {
+exports.pendingAccounts = [
+  auth,
+  (req, res) => {
+    if (!isAdmin(req.user)) {
       return apiResponse.unauthorizedResponse(
         res,
         "Admin Level Clearance Required"
       );
-		}
-		try {
-			PendingAccount.find((err, acc) => {
-				if (err) {
-					return apiResponse.ErrorResponse(res, err);
-				}
-				if (acc.length > 0) {
-					return apiResponse.successResponseWithData(res, "Accounts Listed", acc)
-				}
-				return apiResponse.notFoundResponse(res, "No Pending Accounts")
-			})
-		} catch(err) {
-			return apiResponse.ErrorResponse(res, err);
-		}
-	 }
- ]
+    }
+    try {
+      PendingAccount.find((err, acc) => {
+        if (err) {
+          return apiResponse.ErrorResponse(res, err);
+        }
+        if (acc.length > 0) {
+          return apiResponse.successResponseWithData(
+            res,
+            "Accounts Listed",
+            acc
+          );
+        }
+        return apiResponse.notFoundResponse(res, "No Pending Accounts");
+      });
+    } catch (err) {
+      return apiResponse.ErrorResponse(res, err);
+    }
+  },
+];
 
 /**
  * Account List.
@@ -327,7 +334,7 @@ exports.accountById = [
 		}*/
     try {
       console.log("here");
-      Account.findOne({ _id: req.params.id }).then((account) => {
+      PendingAccount.findOne({ _id: req.params.id }).then((account) => {
         console.log(account);
         if (account) {
           return apiResponse.successResponseWithData(
