@@ -278,7 +278,7 @@ exports.accountList = [
           return apiResponse.successResponseWithData(
             res,
             "Operation success",
-            {}
+            []
           );
         }
       });
@@ -333,9 +333,7 @@ exports.accountById = [
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
 		}*/
     try {
-      console.log("here");
       PendingAccount.findOne({ _id: req.params.id }).then((account) => {
-        console.log(account);
         if (account) {
           return apiResponse.successResponseWithData(
             res,
@@ -366,7 +364,6 @@ exports.pendingAcc = [
 		}*/
     try {
       PendingAccount.findOne({ _id: req.params.id }).then((account) => {
-        console.log(account);
         if (account) {
           return apiResponse.successResponseWithData(
             res,

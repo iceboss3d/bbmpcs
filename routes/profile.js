@@ -13,5 +13,6 @@ router.get("/contact/:id", UserController.getUserContact);
 router.get("/kyc", UserController.getKyc);
 router.get("/kyc/:id", UserController.getUserKyc);
 router.get("/user/:id", UserController.getUser);
+router.get("/user", UserController.getUsers);
 
 module.exports = router;
