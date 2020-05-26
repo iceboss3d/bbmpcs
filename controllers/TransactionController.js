@@ -4,6 +4,8 @@ const { body, validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
+const mailer = require("../helpers/mailer");
+const { constants } = require("../helpers/constants");
 var mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 
@@ -38,8 +40,8 @@ exports.createTransaction = [
   body("accountNumber", "Account Number must not be empty.")
     .isLength({ min: 1 })
     .trim()
-    .custom((value) => {
-      return Account.findOne({ accountNumber: value }).then((account) => {
+    .custom(value => {
+      return Account.findOne({ accountNumber: value }).then(account => {
         if (!account) {
           return Promise.reject("Account Number doesn't exist.");
         }
@@ -54,8 +56,8 @@ exports.createTransaction = [
         txRef: value,
         accountNumber,
         amount,
-        transactionType,
-      }).then((transaction) => {
+        transactionType
+      }).then(transaction => {
         if (transaction) {
           return Promise.reject(
             "Transaction already exist with this Reference."
@@ -73,7 +75,7 @@ exports.createTransaction = [
         transactionType,
         txRef,
         channel,
-        description,
+        description
       } = req.body;
       var transaction = new Transaction({
         transactionType,
@@ -81,7 +83,7 @@ exports.createTransaction = [
         amount,
         txRef,
         channel,
-        description,
+        description
       });
 
       if (!errors.isEmpty()) {
@@ -92,23 +94,42 @@ exports.createTransaction = [
         );
       } else {
         //Save Transaction.
-        transaction.save(function (err) {
-          if (err) {
-            return apiResponse.ErrorResponse(res, err);
-          }
-          let transactionData = new TransactionData(transaction);
-          return apiResponse.successResponseWithData(
-            res,
-            "Transaction Creation Successful.",
-            transactionData
-          );
-        });
+        const html = `
+          <p>A ${transactionType.toUpperCase()} transaction occured on your Account.</p>
+          <p>Account Number: <strong>${accountNumber}</strong><br/>
+          Amount: <strong>${amount}</strong><br/>
+          Transaction Reference: <strong>${txRef}</strong><br/>
+          Description: <strong>${description}</strong><br/>
+          Channel: <strong>${channel}</strong>
+          Status: <strong>Pending</strong>
+          </p>
+        `;
+        mailer
+          .send(
+            constants.confirmEmails.from,
+            req.user.email,
+            "Pending Transaction Notification",
+            html
+          )
+          .then(() => {
+            transaction.save(function (err) {
+              if (err) {
+                return apiResponse.ErrorResponse(res, err);
+              }
+              let transactionData = new TransactionData(transaction);
+              return apiResponse.successResponseWithData(
+                res,
+                "Transaction Creation Successful.",
+                transactionData
+              );
+            });
+          });
       }
     } catch (err) {
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 exports.verifyTransaction = [
@@ -140,16 +161,16 @@ exports.verifyTransaction = [
             transaction = {
               status: "verified",
               reference: req.body.reference,
-              approvedBy: req.user._id,
+              approvedBy: req.user._id
             };
           } else {
             transaction = {
               status: "verified",
               refrence: req.body.reference,
-              approvedBy: req.user._id,
+              approvedBy: req.user._id
             };
           }
-          Transaction.findByIdAndUpdate(req.params.id, transaction, (err) => {
+          Transaction.findByIdAndUpdate(req.params.id, transaction, err => {
             if (err) {
               return apiResponse.ErrorResponse(res, err);
             } else {
@@ -167,7 +188,7 @@ exports.verifyTransaction = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -179,7 +200,7 @@ exports.transactionListStatus = [
   auth,
   function (req, res) {
     try {
-      Transaction.find({ status: req.query.status }).then((transactions) => {
+      Transaction.find({ status: req.query.status }).then(transactions => {
         if (transactions.length > 0) {
           return apiResponse.successResponseWithData(
             res,
@@ -198,7 +219,7 @@ exports.transactionListStatus = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -210,7 +231,7 @@ exports.transactionList = [
   auth,
   function (req, res) {
     try {
-      Transaction.find({}).then((transactions) => {
+      Transaction.find({}).then(transactions => {
         if (transactions.length > 0) {
           return apiResponse.successResponseWithData(
             res,
@@ -221,7 +242,7 @@ exports.transactionList = [
           return apiResponse.successResponseWithData(
             res,
             "Operation success",
-            {}
+            []
           );
         }
       });
@@ -229,7 +250,7 @@ exports.transactionList = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -241,7 +262,7 @@ exports.transactionDetail = [
   auth,
   function (req, res) {
     try {
-      Transaction.findOne({ _id: req.params.id }).then((transaction) => {
+      Transaction.findOne({ _id: req.params.id }).then(transaction => {
         if (transaction) {
           return apiResponse.successResponseWithData(
             res,
@@ -256,7 +277,7 @@ exports.transactionDetail = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 /**
  * Account Transactions.
@@ -269,8 +290,8 @@ exports.accountTransactions = [
     try {
       Transaction.find({
         accountNumber: req.params.accountNumber,
-        status: "verified",
-      }).then((transaction) => {
+        status: "verified"
+      }).then(transaction => {
         if (transaction > 0) {
           return apiResponse.successResponseWithData(
             res,
@@ -289,7 +310,7 @@ exports.accountTransactions = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 exports.withdraw = [
@@ -302,10 +323,10 @@ exports.withdraw = [
         accountNumber,
         transactionType: "debit",
         reference: "pending",
-        channel: "bank",
+        channel: "bank"
       });
 
-      transaction.save((err) => {
+      transaction.save(err => {
         if (err) {
           return apiResponse.ErrorResponse(res, err);
         }
@@ -319,5 +340,5 @@ exports.withdraw = [
     } catch (err) {
       return apiResponse.ErrorResponse(res, "Something went wrong");
     }
-  },
+  }
 ];

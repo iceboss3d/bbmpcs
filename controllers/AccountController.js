@@ -5,6 +5,8 @@ const { body, validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
+const mailer = require("../helpers/mailer");
+const { constants } = require("../helpers/constants");
 const { isAdmin, isOwner } = require("../helpers/userValidation");
 var mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
@@ -50,7 +52,7 @@ exports.createAccount = [
         accountType: req.body.accountType,
         txRef: req.body.txRef,
         amount: req.body.amount,
-        user: req.user,
+        user: req.user
       });
 
       if (!errors.isEmpty()) {
@@ -61,23 +63,55 @@ exports.createAccount = [
         );
       } else {
         //Save Account.
-        account.save(function (err) {
-          if (err) {
-            return apiResponse.ErrorResponse(res, err);
-          }
-          let accountData = new PendingAccountData(account);
-          return apiResponse.successResponseWithData(
-            res,
-            "Account Creation Successful.",
-            accountData
-          );
-        });
+        const html = `
+          <p>Dear ${req.user.lastName},</p>
+          <p>
+            Your ${account.accountType} account has been created. You'd be notified by email when your account is validated and your account number communicated.
+          </p>
+        `;
+        mailer
+          .send(
+            constants.confirmEmails.from,
+            req.user.email,
+            "Account Creation Notification",
+            html
+          )
+          .then(() => {
+            account.save(function (err) {
+              if (err) {
+                return apiResponse.ErrorResponse(res, err);
+              }
+              let accountData = new PendingAccountData(account);
+              const html = `
+                <p>
+                  New Account Created, login to the admin dashboard to validate the account.
+                </p>
+              `;
+              mailer
+                .send(
+                  constants.confirmEmails.from,
+                  [
+                    "a.ombu@brassandbooks.com.ng",
+                    "g.ekute@brassandbooks.com.ng"
+                  ],
+                  "Account Creation Notification",
+                  html
+                )
+                .then(() => {
+                  return apiResponse.successResponseWithData(
+                    res,
+                    "Account Creation Successful.",
+                    accountData
+                  );
+                });
+            });
+          });
       }
     } catch (err) {
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -129,7 +163,7 @@ exports.accountUpdate = [
                   user,
                   status: "created",
                   approvedBy: req.user,
-                  accountNumber,
+                  accountNumber
                 });
                 account.save((err, acc) => {
                   if (err) {
@@ -144,16 +178,16 @@ exports.accountUpdate = [
                       txRef,
                       approvedBy: req.user,
                       channel: "Paystack",
-                      description: "Account Opening",
+                      description: "Account Opening"
                     });
-                    transaction.save((err) => {
+                    transaction.save(err => {
                       if (err) {
                         return apiResponse.ErrorResponse(res, err);
                       } else {
                         let accountData = new AccountData(account);
                         PendingAccount.deleteOne(
                           { _id: req.params.id },
-                          (err) => {
+                          err => {
                             if (err) {
                               return apiResponse.ErrorResponse(res, err);
                             }
@@ -177,7 +211,7 @@ exports.accountUpdate = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -212,7 +246,7 @@ exports.pendingAccounts = [
     } catch (err) {
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -230,7 +264,7 @@ exports.accountListStatus = [
       );
     }
     try {
-      Account.find({ status: req.query.status }).then((accounts) => {
+      Account.find({ status: req.query.status }).then(accounts => {
         if (accounts.length > 0) {
           return apiResponse.successResponseWithData(
             res,
@@ -249,7 +283,7 @@ exports.accountListStatus = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -267,7 +301,7 @@ exports.accountList = [
       );
     }
     try {
-      Account.find({}).then((accounts) => {
+      Account.find({}).then(accounts => {
         if (accounts.length > 0) {
           return apiResponse.successResponseWithData(
             res,
@@ -286,7 +320,7 @@ exports.accountList = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -302,7 +336,7 @@ exports.accountNumber = [
     }
     try {
       Account.findOne({ accountNumber: req.params.accountNumber }).then(
-        (account) => {
+        account => {
           if (account) {
             return apiResponse.successResponseWithData(
               res,
@@ -318,7 +352,7 @@ exports.accountNumber = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -333,7 +367,7 @@ exports.accountById = [
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
 		}*/
     try {
-      PendingAccount.findOne({ _id: req.params.id }).then((account) => {
+      PendingAccount.findOne({ _id: req.params.id }).then(account => {
         if (account) {
           return apiResponse.successResponseWithData(
             res,
@@ -348,7 +382,7 @@ exports.accountById = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -363,7 +397,7 @@ exports.pendingAcc = [
 			return apiResponse.unauthorizedResponse(res, "Admin Clearance Required");
 		}*/
     try {
-      PendingAccount.findOne({ _id: req.params.id }).then((account) => {
+      PendingAccount.findOne({ _id: req.params.id }).then(account => {
         if (account) {
           return apiResponse.successResponseWithData(
             res,
@@ -378,7 +412,7 @@ exports.pendingAcc = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
 
 /**
@@ -391,7 +425,7 @@ exports.accountUser = [
   function (req, res) {
     try {
       Account.find({ user: req.params.userId, status: "created" }).then(
-        (accounts) => {
+        accounts => {
           if (accounts.length > 0) {
             return apiResponse.successResponseWithData(
               res,
@@ -411,5 +445,5 @@ exports.accountUser = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  },
+  }
 ];
