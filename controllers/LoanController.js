@@ -129,7 +129,7 @@ exports.getLoans = [
         if (err) {
           return apiResponse.ErrorResponse(res, err);
         }
-        return apiResponse.successResponseWithData(res, loans);
+        return apiResponse.successResponseWithData(res, "Loans Fetched", loans);
       });
     } catch (error) {
       return apiResponse.ErrorResponse(res, error);
