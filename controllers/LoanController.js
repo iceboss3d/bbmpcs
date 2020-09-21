@@ -6,7 +6,6 @@ const auth = require("../middlewares/jwt");
 const mailer = require("../helpers/mailer");
 const { constants } = require("../helpers/constants");
 var mongoose = require("mongoose");
-const UserModel = require("../models/UserModel");
 mongoose.set("useFindAndModify", false);
 const paystack = require("paystack")(process.env.PAYSTACK_SECRET_KEY);
 
@@ -107,7 +106,11 @@ exports.getLoanDetail = [
         if (!loan) {
           return apiResponse.notFoundResponse(res, "Loan not found");
         }
-        return apiResponse.successResponseWithData(res, "Successfully Fetched Loan", loan);
+        return apiResponse.successResponseWithData(
+          res,
+          "Successfully Fetched Loan",
+          loan,
+        );
       });
     } catch (error) {
       return apiResponse.ErrorResponse(res, error);
@@ -130,6 +133,66 @@ exports.getLoans = [
           return apiResponse.ErrorResponse(res, err);
         }
         return apiResponse.successResponseWithData(res, "Loans Fetched", loans);
+      });
+    } catch (error) {
+      return apiResponse.ErrorResponse(res, error);
+    }
+  },
+];
+
+/**
+ * Update Loan Application
+ *
+ * @param     businessName
+ * @param     businessAddress
+ * @param     typeOfBusiness
+ * @param     netMonthlyIncome
+ * @param     bvn
+ * @param     amount
+ * @param     duration
+ *
+ * @returns {object}
+ */
+
+exports.updateLoanApplication = [
+  auth,
+  (req, res) => {
+    try {
+      const {
+        businessName,
+        businessAddress,
+        typeOfBusiness,
+        netMonthlyIncome,
+        bvn,
+        amount,
+        duration,
+      } = req.body;
+      Loan.findById(req.params.id, (err, doc) => {
+        if (err) {
+          return apiResponse.ErrorResponse(res, err);
+        }
+        if (!doc) {
+          return apiResponse.notFoundResponse(res, "Loan not found");
+        }
+        Loan.findByIdAndUpdate(
+          req.params.id,
+          {
+            businessName,
+            businessAddress,
+            typeOfBusiness,
+            netMonthlyIncome,
+            bvn,
+            amount,
+            duration,
+            status: true
+          },
+          err => {
+            if (err) {
+              return apiResponse.ErrorResponse(res, err);
+            }
+            return apiResponse.successResponse(res, "Loan Application Updated");
+          },
+        );
       });
     } catch (error) {
       return apiResponse.ErrorResponse(res, error);
