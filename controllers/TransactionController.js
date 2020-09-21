@@ -50,17 +50,13 @@ exports.createTransaction = [
   body("txRef", "TxRef must not be empty.")
     .isLength({ min: 1 })
     .trim()
-    .custom((value, { req }) => {
-      const { accountNumber, amount, transactionType } = req.body;
+    .custom(value => {
       return Transaction.findOne({
         txRef: value,
-        accountNumber,
-        amount,
-        transactionType
       }).then(transaction => {
         if (transaction) {
           return Promise.reject(
-            "Transaction already exist with this Reference."
+            "Transaction already exist with this Reference.",
           );
         }
       });
@@ -75,7 +71,7 @@ exports.createTransaction = [
         transactionType,
         txRef,
         channel,
-        description
+        description,
       } = req.body;
       var transaction = new Transaction({
         transactionType,
@@ -83,14 +79,14 @@ exports.createTransaction = [
         amount,
         txRef,
         channel,
-        description
+        description,
       });
 
       if (!errors.isEmpty()) {
         return apiResponse.validationErrorWithData(
           res,
           "Validation Error.",
-          errors.array()
+          errors.array(),
         );
       } else {
         //Save Transaction.
@@ -109,7 +105,7 @@ exports.createTransaction = [
             constants.confirmEmails.from,
             req.user.email,
             "Pending Transaction Notification",
-            html
+            html,
           )
           .then(() => {
             transaction.save(function (err) {
@@ -120,7 +116,7 @@ exports.createTransaction = [
               return apiResponse.successResponseWithData(
                 res,
                 "Transaction Creation Successful.",
-                transactionData
+                transactionData,
               );
             });
           });
@@ -129,7 +125,7 @@ exports.createTransaction = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 
 exports.verifyTransaction = [
@@ -144,7 +140,7 @@ exports.verifyTransaction = [
         if (trx) {
           return apiResponse.ErrorResponse(
             res,
-            "Transaction with same reference already exists"
+            "Transaction with same reference already exists",
           );
         }
       });
@@ -161,13 +157,13 @@ exports.verifyTransaction = [
             transaction = {
               status: "verified",
               reference: req.body.reference,
-              approvedBy: req.user._id
+              approvedBy: req.user._id,
             };
           } else {
             transaction = {
               status: "verified",
               refrence: req.body.reference,
-              approvedBy: req.user._id
+              approvedBy: req.user._id,
             };
           }
           Transaction.findByIdAndUpdate(req.params.id, transaction, err => {
@@ -178,7 +174,7 @@ exports.verifyTransaction = [
               return apiResponse.successResponseWithData(
                 res,
                 "Transaction Verified",
-                transactionData
+                transactionData,
               );
             }
           });
@@ -188,7 +184,7 @@ exports.verifyTransaction = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 
 /**
@@ -205,13 +201,13 @@ exports.transactionListStatus = [
           return apiResponse.successResponseWithData(
             res,
             "Operation Success",
-            transactions
+            transactions,
           );
         } else {
           return apiResponse.successResponseWithData(
             res,
             "Operation success",
-            {}
+            {},
           );
         }
       });
@@ -219,7 +215,7 @@ exports.transactionListStatus = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 
 /**
@@ -236,13 +232,13 @@ exports.transactionList = [
           return apiResponse.successResponseWithData(
             res,
             "Operation Success",
-            transactions
+            transactions,
           );
         } else {
           return apiResponse.successResponseWithData(
             res,
             "Operation success",
-            []
+            [],
           );
         }
       });
@@ -250,7 +246,7 @@ exports.transactionList = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 
 /**
@@ -267,7 +263,7 @@ exports.transactionDetail = [
           return apiResponse.successResponseWithData(
             res,
             "Operation Success",
-            transaction
+            transaction,
           );
         } else {
           return apiResponse.notFoundResponse(res, "Account not Found");
@@ -277,7 +273,7 @@ exports.transactionDetail = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 /**
  * Account Transactions.
@@ -290,19 +286,19 @@ exports.accountTransactions = [
     try {
       Transaction.find({
         accountNumber: req.params.accountNumber,
-        status: "verified"
+        status: "verified",
       }).then(transaction => {
         if (transaction > 0) {
           return apiResponse.successResponseWithData(
             res,
             "Operation Success",
-            transaction
+            transaction,
           );
         } else {
           return apiResponse.successResponseWithData(
             res,
             "Operation Success",
-            transaction
+            transaction,
           );
         }
       });
@@ -310,7 +306,7 @@ exports.accountTransactions = [
       //throw error in json response with status 500.
       return apiResponse.ErrorResponse(res, err);
     }
-  }
+  },
 ];
 
 exports.withdraw = [
@@ -323,7 +319,7 @@ exports.withdraw = [
         accountNumber,
         transactionType: "debit",
         reference: "pending",
-        channel: "bank"
+        channel: "bank",
       });
 
       transaction.save(err => {
@@ -334,11 +330,11 @@ exports.withdraw = [
         return apiResponse.successResponseWithData(
           res,
           "Transaction Creation Successful.",
-          transactionData
+          transactionData,
         );
       });
     } catch (err) {
       return apiResponse.ErrorResponse(res, "Something went wrong");
     }
-  }
+  },
 ];

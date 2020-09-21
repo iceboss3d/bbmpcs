@@ -13,6 +13,7 @@ const { constants } = require("../helpers/constants");
  * User registration.
  *
  * @param {string}      firstName
+ * @param {string}      otherNames
  * @param {string}      lastName
  * @param {string}      email
  * @param {string}      password
@@ -27,6 +28,9 @@ exports.register = [
     .withMessage("First name must be specified.")
     .isAlphanumeric()
     .withMessage("First name has non-alphanumeric characters."),
+  body("otherNames")
+    .isAlphanumeric()
+    .withMessage("Other names has non-alphanumeric characters."),
   body("lastName")
     .isLength({ min: 1 })
     .trim()
@@ -75,6 +79,7 @@ exports.register = [
           // Create User object with escaped and trimmed data
           var user = new UserModel({
             firstName: req.body.firstName,
+            otherNames: req.body.otherNames,
             lastName: req.body.lastName,
             email: req.body.email,
             password: hash,
@@ -100,6 +105,7 @@ exports.register = [
                 let userData = {
                   _id: user._id,
                   firstName: user.firstName,
+                  otherNames: user.otherNames,
                   lastName: user.lastName,
                   email: user.email
                 };
@@ -169,6 +175,7 @@ exports.login = [
                     let userData = {
                       _id: user._id,
                       firstName: user.firstName,
+                      otherNames: user.otherNames,
                       lastName: user.lastName,
                       email: user.email,
                       level: user.level

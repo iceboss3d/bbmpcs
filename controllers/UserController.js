@@ -129,6 +129,10 @@ exports.updateKyc = [
       Kyc.findOne({ user: req.user }, (err, user) => {
         const kyc = {
           dateOfBirth: req.body.dateOfBirth,
+          gender: req.body.gender,
+          maritalStatus: req.body.maritalStatus,
+          stateOfOrigin: req.body.stateOfOrigin,
+          lga: req.body.lga,
           idUrl: req.body.idUrl,
           passportUrl: req.body.passportUrl,
           signatureUrl: req.body.signatureUrl,
